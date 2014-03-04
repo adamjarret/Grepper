@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -13,8 +14,9 @@ namespace GrepperLib.Controller
         #region Private Members________
 
         private string _baseSearchPath;
-        private IList<FileData> _fileDataList;
+        volatile private IList<FileData> _fileDataList;
         private IList<string> _fileExtensionList;
+        public BackgroundWorker Worker { get; set; }
 
         #endregion Private Members
         #region Public Properties______
@@ -28,7 +30,7 @@ namespace GrepperLib.Controller
             set
             {
                 // match a drive letter pattern only
-                Regex reg = new Regex("^[a-zA-Z][:]{1}");
+                var reg = new Regex("^[a-zA-Z][:]{1}");
                 if (reg.IsMatch(value))
                     _baseSearchPath = value;
                 else
@@ -62,17 +64,9 @@ namespace GrepperLib.Controller
         {
             get
             {
-                if (FileDataList == null)
-                    return 0;
-                else
-                {
-                    int count = 0;
-                    foreach (FileData fd in FileDataList)
-                    {
-                        count += fd.LineDataList.Count;
-                    }
-                    return count;
-                }
+                return FileDataList == null
+                    ? 0
+                    : FileDataList.Sum(fd => fd.LineDataList.Count);
             }
         }
 
@@ -93,10 +87,20 @@ namespace GrepperLib.Controller
         #endregion Constructor
         #region Public Methods_________
 
+        public void SetFormData(SearchOptions so)
+        {
+            SearchCriteria = (so.search ?? "").Trim();
+            MatchCase = so.matchCase;
+            MatchPhrase = so.matchPhrase;
+            FileExtensions = so.extensions ?? "";
+            RecursiveSearch = so.recursive;
+            BaseSearchPath = so.path ?? "";
+            LiteralSearch = so.literal;
+        }
+
         /// <summary>
         /// Creates a list of FileData objects and
         /// </summary>
-        /// <param name="criteria">criteria to search</param>
         public void GenerateFileData()
         {
             MessageList = new List<string>();
@@ -139,65 +143,130 @@ namespace GrepperLib.Controller
         private void SearchFiles(string extension)
         {
             SearchOption so = RecursiveSearch ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            var files = from file in Directory.EnumerateFiles(BaseSearchPath, extension, so)
-                        select file;
+            var files = (from file in Directory.EnumerateFiles(BaseSearchPath, extension, so)
+                        select file).ToList();
 
+            double i = 0;
+            double total = 0;
+            int percent = 0;
+            if (Worker != null)
+            {
+                total = files.Count;
+            }
             foreach (var f in files)
             {
+                i++;
+                if (Worker != null)
+                {
+                    percent = (int)Math.Round((i / total) * 100.0);
+                    Worker.ReportProgress(percent);
+
+                    // Allow cancellation
+                    if (Worker.CancellationPending)
+                    {
+                        return;
+                    }
+                }
+
                 if (!f.Contains('\\')) continue;
-                FileData fileData = new FileData()
+                var fileData = new FileData
                 {
                     FileExtension = extension,
                     FileName = f.Substring(f.LastIndexOf('\\') + 1),
                     FilePath = f.Trim()
                 };
 
-                using (StreamReader sr = new StreamReader(f))
+                using (var sr = new StreamReader(f))
                 {
                     string line;
-                    string originalLine; // saves the letter casing
                     uint lineNumber = 1;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        originalLine = line;
-                        if (!MatchCase) line = line.ToLower();
-
-                        if (LiteralSearch)
+                        // Allow cancellation mid-file
+                        if (Worker != null && Worker.CancellationPending)
                         {
-                            if (MatchPhrase)
-                            {
-                                // criteria to find search pattern that ignores certain boundaries
-                                string phrase = string.Format(@"(\b)({0}+(\b|\n|\s))", SearchCriteria);
-
-                                RegexOptions regOptions = (MatchCase) ? RegexOptions.None : RegexOptions.IgnoreCase;
-                                if (Regex.IsMatch(line, phrase, regOptions))
-                                {
-                                    fileData.SetLineData(lineNumber, originalLine);
-                                }
-                            }
-                            else
-                            {
-                                if (line.Contains(SearchCriteria))
-                                {
-                                    fileData.SetLineData(lineNumber, originalLine);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // pattern treated as REGEX
-                            RegexOptions regOptions = (MatchCase) ? RegexOptions.None : RegexOptions.IgnoreCase;
-                            if (Regex.IsMatch(line, SearchCriteria, regOptions))
-                            {
-                                fileData.SetLineData(lineNumber, originalLine);
-                            }
+                            return;
                         }
 
+                        SearchLine(lineNumber, line, ref fileData);
                         lineNumber++;
                     }
                 }
-                if (fileData.LineDataList != null && fileData.LineDataList.Count > 0) _fileDataList.Add(fileData);
+                if (fileData.LineDataList != null && fileData.LineDataList.Count > 0)
+                {
+                    _fileDataList.Add(fileData);
+                    if (Worker != null)
+                    {
+                        Worker.ReportProgress(percent, fileData);
+                    }
+                }
             }
+        }
+
+        public void SearchLine(long lineNumber, string line, ref FileData fileData)
+        {
+            RegexOptions regOptions = (MatchCase) ? RegexOptions.None : RegexOptions.IgnoreCase;
+            if (LiteralSearch)
+            {
+                if (MatchPhrase)
+                {
+                    // criteria to find search pattern that ignores certain boundaries
+                    string phrase = string.Format(@"(\b)({0}+(\b|\n|\s))", SearchCriteria);
+                    Regex reg = new Regex(phrase, regOptions);
+                    if (reg.IsMatch(line))
+                    {
+                        var lineData = new LineData(lineNumber, line);
+                        foreach (Match match in reg.Matches(line))
+                        {
+                            lineData.Matches.Add(new MatchRange(match.Index, match.Length));
+                        }
+                        fileData.SetLineData(lineNumber, lineData);
+                    }
+                }
+                else
+                {
+                    int len = SearchCriteria.Length;
+                    string lowerline = line;
+                    string lowersc = SearchCriteria;
+                    if (!MatchCase)
+                    {
+                        lowerline = lowerline.ToLower();
+                        lowersc = lowersc.ToLower();
+                    }
+
+                    if (lowerline.Contains(lowersc))
+                    {
+                        var lineData = new LineData(lineNumber, line);
+                        int pos, startIdx = 0;
+                        do
+                        {
+                            pos = lowerline.IndexOf(lowersc, startIdx, StringComparison.Ordinal);
+                            if (pos >= 0)
+                            {
+                                lineData.Matches.Add(new MatchRange(pos, len));
+                                startIdx = pos + len;
+                            }
+                        }
+                        while(pos >= 0);
+                        fileData.SetLineData(lineNumber, lineData);
+                    }
+                }
+            }
+            else
+            {
+                // pattern treated as REGEX
+                var reg = new Regex(SearchCriteria, regOptions);
+                if (reg.IsMatch(line))
+                {
+                    var lineData = new LineData(lineNumber, line);
+                    foreach (Match match in reg.Matches(line))
+                    {
+                        lineData.Matches.Add(new MatchRange(match.Index, match.Length));
+                    }
+                    fileData.SetLineData(lineNumber, lineData);
+                }
+            }
+            
         }
 
         #endregion Private Methods

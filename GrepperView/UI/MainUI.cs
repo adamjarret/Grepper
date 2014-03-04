@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -29,8 +30,6 @@ namespace GrepperView
         /// <param name="path"></param>
         public MainUI(string path)
         {
-            if (path.StartsWith("-p")) path = path.Substring(2);
-
             InitializeComponent();
             timeCounter.Enabled = false;
             progressBar.Visible = false;
@@ -53,11 +52,12 @@ namespace GrepperView
         /// <param name="e">PaintEventArgs</param>
         protected override void OnPaintBackground(PaintEventArgs e)
         {
-            if (this.ClientRectangle.Width > 0 && this.ClientRectangle.Height > 0)
+            Rectangle r = this.ClientRectangle;
+            if (r.Width > 0 && r.Height > 0)
             {
-                using (LinearGradientBrush brush = new LinearGradientBrush(this.ClientRectangle, Color.Black, Color.BlanchedAlmond, 270F))
+                using (LinearGradientBrush brush = new LinearGradientBrush(r, Color.White, Color.AliceBlue, LinearGradientMode.Vertical))
                 {
-                    e.Graphics.FillRectangle(brush, this.ClientRectangle);
+                    e.Graphics.FillRectangle(brush, r);
                 }
             }
             else
@@ -72,6 +72,15 @@ namespace GrepperView
         protected void MainUI_Resize(object sender, EventArgs e)
         {
             this.Invalidate();
+        }
+
+        /// <summary>
+        /// Save User Settings when window closes
+        /// </summary>
+        protected void MainUI_FormClosing(Object sender, FormClosingEventArgs e)
+        {
+            // save the current user option settings
+            SaveCurrentSettings();
         }
 
         /// <summary>
@@ -148,9 +157,9 @@ namespace GrepperView
                             select match;
 
             if (fileMatch == null || fileMatch.Count() < 1) return;
-            foreach (KeyValuePair<long, string> item in (Dictionary<long, string>)fileMatch.First().LineDataList)
+            foreach (KeyValuePair<long, LineData> item in (Dictionary<long, LineData>)fileMatch.First().LineDataList)
             {
-                ListViewItem lvi = new ListViewItem(new string[] { item.Key.ToString(), item.Value });
+                ListViewItem lvi = new ListViewItem(new string[] { item.Key.ToString(), item.Value.Text });
                 lvwLineData.Items.Add(lvi);
             }
 
@@ -294,12 +303,11 @@ namespace GrepperView
             if (ddlFileExtensions.Text.Length > 0 && !ddlFileExtensions.Items.Contains(ddlFileExtensions.Text))
                 ddlFileExtensions.Items.Add(ddlFileExtensions.Text);
 
-            List<string> extensionList = new List<string>();
+            UserSettings.Extensions.Clear();
             foreach (string item in ddlFileExtensions.Items)
             {
-                extensionList.Add(item);
+                UserSettings.Extensions.Add(item);
             }
-            RegistrySettings.SaveExtensionItems(extensionList);
 
             #endregion
             #region Manage Search List
@@ -333,22 +341,25 @@ namespace GrepperView
                 }
             }
             
-            List<string> searchList = new List<string>();
+            UserSettings.SearchTerms.Clear();
             foreach (string item in ddlSearchCriteria.Items)
             {
-                searchList.Add(item);
+                UserSettings.SearchTerms.Add(item);
             }
 
             #endregion
-            #region Save Items to Registry
+            #region Save Settings
 
-            RegistrySettings.SaveSearchItems(searchList);
-            RegistrySettings.SaveCurrentExtension(ddlFileExtensions.Text);
-            RegistrySettings.SaveSettingBool(RegistrySettings.GrepperKeyName.literal, rbLiteral.Checked);
-            RegistrySettings.SaveSettingBool(RegistrySettings.GrepperKeyName.matchCase, cbxMatchCase.Checked);
-            RegistrySettings.SaveSettingBool(RegistrySettings.GrepperKeyName.matchPhrase, cbxMatchPhrase.Checked);
-            RegistrySettings.SaveSettingBool(RegistrySettings.GrepperKeyName.recursive, cbxRecursive.Checked);
-            RegistrySettings.SaveSettingString(RegistrySettings.GrepperKeyName.search, ddlSearchCriteria.Text);
+            SearchOptions so = new SearchOptions();
+            so.literal = rbLiteral.Checked;
+            so.matchCase = cbxMatchCase.Checked;
+            so.matchPhrase = cbxMatchPhrase.Checked;
+            so.recursive = cbxRecursive.Checked;
+            so.search = ddlSearchCriteria.Text;
+            so.path = txtBaseSearchPath.Text;
+            UserSettings.SearchOptions = so;
+
+            UserSettings.Save();
 
             #endregion
         }
@@ -361,22 +372,30 @@ namespace GrepperView
             try
             {
                 ddlFileExtensions.Items.Clear();
-                foreach (string item in RegistrySettings.LoadExtensions())
+                StringCollection extns = UserSettings.Extensions;
+                if(extns.Count > 0)
                 {
-                    ddlFileExtensions.Items.Add(item);
+                    foreach (string item in extns)
+                    {
+                        ddlFileExtensions.Items.Add(item);
+                    }
+                    ddlFileExtensions.Text = extns[0];
                 }
-                ddlFileExtensions.Text = RegistrySettings.GetLastExtension();
+
                 ddlSearchCriteria.Items.Clear();
-                foreach (string item in RegistrySettings.LoadSearchItems())
+                foreach (string item in UserSettings.SearchTerms)
                 {
                     ddlSearchCriteria.Items.Add(item);
                 }
-                ddlSearchCriteria.Text = RegistrySettings.LoadSettingString(RegistrySettings.GrepperKeyName.search);
-                cbxMatchCase.Checked = RegistrySettings.LoadSettingBool(RegistrySettings.GrepperKeyName.matchCase);
-                cbxMatchPhrase.Checked = RegistrySettings.LoadSettingBool(RegistrySettings.GrepperKeyName.matchPhrase);
-                cbxRecursive.Checked = RegistrySettings.LoadSettingBool(RegistrySettings.GrepperKeyName.recursive);
-                rbLiteral.Checked = RegistrySettings.LoadSettingBool(RegistrySettings.GrepperKeyName.literal);
+
+                SearchOptions so = UserSettings.SearchOptions;
+                ddlSearchCriteria.Text = so.search;
+                cbxMatchCase.Checked = so.matchCase;
+                cbxMatchPhrase.Checked = so.matchPhrase;
+                cbxRecursive.Checked = so.recursive;
+                rbLiteral.Checked = so.literal;
                 rbRegular.Checked = !rbLiteral.Checked;
+
                 // set app version on titlebar
                 this.Text = string.Format("GREPPER v{0}.{1}.{2}", Assembly.GetAssembly(_fileController.GetType()).GetName().Version.Major,
                                                                   Assembly.GetAssembly(_fileController.GetType()).GetName().Version.Minor,

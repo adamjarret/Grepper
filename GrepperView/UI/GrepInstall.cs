@@ -22,9 +22,12 @@ namespace GrepperView
 		{
 			try
 			{
-				Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-				string path = String.Format("{0}\\Grepper.exe", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-				Process.Start(path, "installer");
+                string parentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); //GetEntryAssembly
+                Directory.SetCurrentDirectory(parentPath);
+				string path = String.Format("{0}\\Grepper.exe", parentPath);
+                ProcessStartInfo startInfo = new ProcessStartInfo(path, "/contextmenu=1");
+                //startInfo.Verb = "runas"; //trigger a UAC prompt (if UAC is enabled) 
+                Process.Start(startInfo);
 			}
 			catch { }
 		}

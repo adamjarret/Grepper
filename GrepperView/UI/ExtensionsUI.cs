@@ -27,12 +27,10 @@ namespace GrepperView
         {
             if (lbExtensions.SelectedItem != null)
             {
-                if (RegistrySettings.DeleteExtensionItem(lbExtensions.SelectedItem.ToString()))
-                {
-                    // update UI
-                    lbExtensions.Items.Clear();
-                    LoadExtensions();
-                }
+                UserSettings.Extensions.Remove(lbExtensions.SelectedItem.ToString());
+                UserSettings.Save();
+
+                LoadExtensions(); // update UI
             }
         }
 
@@ -41,7 +39,8 @@ namespace GrepperView
         /// </summary>
         private void LoadExtensions()
         {
-            foreach (string item in RegistrySettings.LoadExtensions())
+            lbExtensions.Items.Clear();
+            foreach (string item in UserSettings.Extensions)
             {
                 lbExtensions.Items.Add(item);
             }

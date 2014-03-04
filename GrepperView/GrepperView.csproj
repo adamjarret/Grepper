@@ -85,41 +85,49 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="TestApiCore">
+      <HintPath>..\packages\Microsoft.TestApi.0.6.0.0\lib\net40\TestApiCore.dll</HintPath>
+    </Reference>
+    <Reference Include="TestApiWpf">
+      <HintPath>..\packages\Microsoft.TestApi.0.6.0.0\lib\net40\TestApiWpf.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DirectoryBrowser.cs">
+    <Compile Include="UI\DirectoryBrowser.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DirectoryBrowser.Designer.cs">
+    <Compile Include="UI\DirectoryBrowser.Designer.cs">
       <DependentUpon>DirectoryBrowser.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtensionsUI.cs">
+    <Compile Include="UI\ExtensionsUI.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtensionsUI.Designer.cs">
+    <Compile Include="UI\ExtensionsUI.Designer.cs">
       <DependentUpon>ExtensionsUI.cs</DependentUpon>
     </Compile>
-    <Compile Include="GrepInstall.cs">
+    <Compile Include="UI\GrepInstall.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="GrepInstall.Designer.cs">
+    <Compile Include="UI\GrepInstall.Designer.cs">
       <DependentUpon>GrepInstall.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainUI.cs">
+    <Compile Include="UI\MainUI.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainUI.Designer.cs">
+    <Compile Include="UI\MainUI.Designer.cs">
       <DependentUpon>MainUI.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="DirectoryBrowser.resx">
+    <Compile Include="Settings.cs" />
+    <Compile Include="UserSettings.cs" />
+    <EmbeddedResource Include="UI\DirectoryBrowser.resx">
       <DependentUpon>DirectoryBrowser.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtensionsUI.resx">
+    <EmbeddedResource Include="UI\ExtensionsUI.resx">
       <DependentUpon>ExtensionsUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainUI.resx">
+    <EmbeddedResource Include="UI\MainUI.resx">
       <DependentUpon>MainUI.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -131,6 +139,8 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

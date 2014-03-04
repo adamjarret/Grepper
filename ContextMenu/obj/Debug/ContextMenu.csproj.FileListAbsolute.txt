@@ -13,3 +13,7 @@ C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\ContextMenu\b
 C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\ContextMenu\obj\Debug\ResolveAssemblyReference.cache
 C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\ContextMenu\obj\Debug\ContextMenu.dll
 C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\ContextMenu\obj\Debug\ContextMenu.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\ContextMenu\bin\Debug\ContextMenu.dll
+C:\Users\Adam\Documents\GitHub\Grepper\ContextMenu\bin\Debug\ContextMenu.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\ContextMenu\obj\Debug\ContextMenu.dll
+C:\Users\Adam\Documents\GitHub\Grepper\ContextMenu\obj\Debug\ContextMenu.pdb

@@ -53,3 +53,28 @@ C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\GrepperView\o
 C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\GrepperView\obj\x86\Debug\Grepper.application
 C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\GrepperView\obj\x86\Debug\Grepper.exe
 C:\Users\AZCoder\Documents\Visual Studio 2010\Projects\GrepperProj\GrepperView\obj\x86\Debug\Grepper.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\Grepper.exe.config
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\Grepper.exe.manifest
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\Grepper.application
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\Grepper.exe
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\Grepper.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\ContextMenu.dll
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\GrepperLib.dll
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\TestApiCore.dll
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\TestApiWpf.dll
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\ContextMenu.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\GrepperLib.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\TestApiCore.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\TestApiCore.xml
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\TestApiWpf.pdb
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\bin\Debug\TestApiWpf.xml
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\GrepperView.csprojResolveAssemblyReference.cache
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\GrepperView.DirectoryBrowser.resources
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\GrepperView.ExtensionsUI.resources
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\GrepperView.MainUI.resources
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\GrepperView.Properties.Resources.resources
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\GrepperView.csproj.GenerateResource.Cache
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\Grepper.exe.manifest
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\Grepper.application
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\Grepper.exe
+C:\Users\Adam\Documents\GitHub\Grepper\GrepperView\obj\x86\Debug\Grepper.pdb

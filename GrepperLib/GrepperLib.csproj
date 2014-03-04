@@ -58,6 +58,8 @@
   <ItemGroup>
     <Compile Include="Controller\FileController.cs" />
     <Compile Include="Model\FileData.cs" />
+    <Compile Include="Model\SearchOptions.cs" />
+    <Compile Include="Model\WindowSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\StringHelper.cs" />
   </ItemGroup>
