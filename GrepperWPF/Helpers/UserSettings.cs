@@ -108,10 +108,22 @@ namespace GrepperWPF.Helpers
             set { Settings.Default.DoubleClickToOpen = value; }
         }
 
+        public static bool ShiftDoubleClickToReveal
+        {
+            get { return Settings.Default.ShiftDoubleClickToReveal; }
+            set { Settings.Default.ShiftDoubleClickToReveal = value; }
+        }
+
         public static bool EnterToOpen
         {
             get { return Settings.Default.EnterToOpen; }
             set { Settings.Default.EnterToOpen = value; }
+        }
+
+        public static bool ShiftEnterToReveal
+        {
+            get { return Settings.Default.ShiftEnterToReveal; }
+            set { Settings.Default.ShiftEnterToReveal = value; }
         }
 
         public static bool RightClickToCopy
@@ -156,13 +168,13 @@ namespace GrepperWPF.Helpers
             }
             else
             {
-                if (!RememberLastSearch || String.IsNullOrEmpty(SearchOptions.path))
+                if (!RememberLastSearch || String.IsNullOrEmpty(SearchOptions.Path))
                 {
                     path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 }
                 else
                 {
-                    path = SearchOptions.path;
+                    path = SearchOptions.Path;
                 }
             }
 

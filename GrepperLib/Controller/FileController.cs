@@ -89,13 +89,13 @@ namespace GrepperLib.Controller
 
         public void SetFormData(SearchOptions so)
         {
-            SearchCriteria = (so.search ?? "").Trim();
-            MatchCase = so.matchCase;
-            MatchPhrase = so.matchPhrase;
-            FileExtensions = so.extensions ?? "";
-            RecursiveSearch = so.recursive;
-            BaseSearchPath = so.path ?? "";
-            LiteralSearch = so.literal;
+            SearchCriteria = (so.Search ?? "").Trim();
+            MatchCase = so.MatchCase;
+            MatchPhrase = so.MatchPhrase;
+            FileExtensions = so.Extensions ?? "";
+            RecursiveSearch = so.Recursive;
+            BaseSearchPath = so.Path ?? "";
+            LiteralSearch = so.Literal;
         }
 
         /// <summary>

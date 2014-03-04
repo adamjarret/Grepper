@@ -179,7 +179,7 @@
         
         <!-- User Preferences -->
 
-        <Border BorderBrush="SlateGray" BorderThickness="1" x:Name="Options" Panel.ZIndex="999" Height="Auto" Margin="20" Visibility="Collapsed">
+        <Border BorderBrush="SlateGray" BorderThickness="1" x:Name="Options" Panel.ZIndex="999" Height="Auto" Margin="20" Visibility="Visible">
             <Grid>
                 <Grid.Background>
                     <SolidColorBrush Color="White" Opacity=".95"/>
@@ -192,7 +192,7 @@
                                     HorizontalAlignment="Right" VerticalAlignment="Top"
                                     Click="btnCloseOptions_Click" />
                 </Grid>
-                <ScrollViewer Margin="6,38,6,6">
+                <ScrollViewer Margin="6,38,6,6" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <Label HorizontalAlignment="Left"
                         Content="Options" FontWeight="Bold" FontSize="16" />
@@ -287,6 +287,18 @@
                         Path=EnterToOpen}"
                         Content="Press enter to open selected file using the default application" />
                         <CheckBox Margin="6"
+                        Name="cbxShiftDoubleClickToReveal"
+                        IsChecked="{Binding
+                        Source={StaticResource UserSettings},
+                        Path=ShiftDoubleClickToReveal}"
+                        Content="Hold shift + double click to reveal selected file in Explorer" />
+                        <CheckBox Margin="6"
+                        Name="cbxShiftEnterToReveal"
+                        IsChecked="{Binding
+                        Source={StaticResource UserSettings},
+                        Path=ShiftEnterToReveal}"
+                        Content="Press shift + enter to reveal selected file in Explorer" />
+                        <CheckBox Margin="6"
                         Name="cbxRightClickToCopy"
                         IsChecked="{Binding
                         Source={StaticResource UserSettings},
@@ -301,6 +313,8 @@
                         Source={StaticResource UserSettings},
                         Path=CopyLinesInSequence}"
                         Content="Copy result lines in sequence (only useful if you use a clipboard manager)" />
+
+                        <Button Margin="0,10,6,10" Width="80" Height="28.5" HorizontalAlignment="Right" Click="btnCloseOptions_Click">Close</Button>
 
                     </StackPanel>
                 </ScrollViewer>

@@ -64,13 +64,13 @@ namespace GrepperView
             {
                 // set remembered or default search path if no args passed
                 if (UserSettings.SearchOptions == null
-                    || String.IsNullOrEmpty(UserSettings.SearchOptions.path))
+                    || String.IsNullOrEmpty(UserSettings.SearchOptions.Path))
                 {
                     path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 }
                 else
                 {
-                    path = UserSettings.SearchOptions.path;
+                    path = UserSettings.SearchOptions.Path;
                 }
             }
             else

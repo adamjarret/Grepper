@@ -112,9 +112,19 @@ namespace GrepperWPF
         /// <param name="e"></param>
         private void lvw_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (UserSettings.DoubleClickToOpen)
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
             {
-                OpenSelectedFile();
+                if (UserSettings.ShiftDoubleClickToReveal)
+                {
+                    RevealSelectedFile();
+                }
+            }
+            else
+            {
+                if (UserSettings.DoubleClickToOpen)
+                {
+                    OpenSelectedFile();
+                }
             }
         }
 
@@ -125,9 +135,21 @@ namespace GrepperWPF
         /// <param name="e"></param>
         private void lvw_KeyUp(object sender, KeyEventArgs e)
         {
-            if (UserSettings.EnterToOpen && e.Key == Key.Return)
+            if (e.Key != Key.Return) return; // We only care about the return key
+
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
             {
-                OpenSelectedFile();
+                if (UserSettings.ShiftEnterToReveal)
+                {
+                    RevealSelectedFile();
+                }
+            }
+            else
+            {
+                if (UserSettings.EnterToOpen)
+                {
+                    OpenSelectedFile();
+                }
             }
         }
 
@@ -238,7 +260,7 @@ namespace GrepperWPF
         {
             var dlg = new VistaFolderBrowserDialog();
             var so = GetSearchOptions();
-            dlg.SelectedPath = so.path;
+            dlg.SelectedPath = so.Path;
             dlg.ShowNewFolderButton = true;
             if (dlg.ShowDialog() == true)
             {
@@ -315,6 +337,23 @@ namespace GrepperWPF
         #endregion
 
         #region Helpers
+
+        /// <summary>
+        /// Attempts to show the selected file in Explorer
+        /// </summary>
+        private FileData SelectedFile()
+        {
+            FileMatchRow selectedRow = SelectedFileRow();
+            string selectedPath = selectedRow.Path;
+            var fileMatch = (from match in _fileController.FileDataList
+                             where match.FilePath == selectedPath
+                             select match).ToList();
+            if (fileMatch.Count < 1)
+            {
+                return null;
+            }
+            return fileMatch.First();
+        }
 
         private FileMatchRow SelectedFileRow()
         {
@@ -402,13 +441,13 @@ namespace GrepperWPF
         {
             return new SearchOptions
             {
-                literal = cbxRegEx != null && !cbxRegEx.IsChecked.GetValueOrDefault(),
-                matchCase = cbxMatchCase != null && cbxMatchCase.IsChecked.GetValueOrDefault(),
-                matchPhrase = cbxMatchPhrase != null && cbxMatchPhrase.IsChecked.GetValueOrDefault(),
-                recursive = cbxRecursive != null && cbxRecursive.IsChecked.GetValueOrDefault(),
-                search = ddlSearchCriteria.Text,
-                path = ddlBaseSearchPath.Text,
-                extensions = ddlFileExtensions.Text
+                Literal = cbxRegEx != null && !cbxRegEx.IsChecked.GetValueOrDefault(),
+                MatchCase = cbxMatchCase != null && cbxMatchCase.IsChecked.GetValueOrDefault(),
+                MatchPhrase = cbxMatchPhrase != null && cbxMatchPhrase.IsChecked.GetValueOrDefault(),
+                Recursive = cbxRecursive != null && cbxRecursive.IsChecked.GetValueOrDefault(),
+                Search = ddlSearchCriteria.Text,
+                Path = ddlBaseSearchPath.Text,
+                Extensions = ddlFileExtensions.Text
             };
         }
 
@@ -443,12 +482,12 @@ namespace GrepperWPF
             if (UserSettings.RememberLastSearch)
             {
                 SearchOptions so = UserSettings.SearchOptions;
-                cbxMatchCase.IsChecked = so.matchCase;
-                cbxMatchPhrase.IsChecked = so.matchPhrase;
-                cbxRecursive.IsChecked = so.recursive;
-                cbxRegEx.IsChecked = !so.literal;
-                ddlFileExtensions.Text = so.extensions;
-                ddlSearchCriteria.Text = so.search;
+                cbxMatchCase.IsChecked = so.MatchCase;
+                cbxMatchPhrase.IsChecked = so.MatchPhrase;
+                cbxRecursive.IsChecked = so.Recursive;
+                cbxRegEx.IsChecked = !so.Literal;
+                ddlFileExtensions.Text = so.Extensions;
+                ddlSearchCriteria.Text = so.Search;
             }
 
             ddlBaseSearchPath.Text = UserSettings.GetInitialPath();
@@ -543,14 +582,23 @@ namespace GrepperWPF
         /// </summary>
         private void OpenSelectedFile()
         {
-            FileMatchRow selectedRow = SelectedFileRow();
-            string itemSelected = selectedRow.Path;
-            var fileMatch = (from match in _fileController.FileDataList
-                            where match.FilePath == itemSelected
-                            select match).ToList();
+            var fileData = SelectedFile();
+            if (fileData == null) return;
+            using (var proc = new Process { StartInfo = new ProcessStartInfo(fileData.FilePath) })
+            {
+                proc.Start();
+            }
+        }
 
-            if (fileMatch.Count < 1) return;
-            using (var proc = new Process { StartInfo = new ProcessStartInfo(fileMatch.First().FilePath) })
+        /// <summary>
+        /// Attempts to show the selected file in Explorer
+        /// </summary>
+        private void RevealSelectedFile()
+        {
+            var fileData = SelectedFile();
+            if (fileData == null) return;
+            string args = string.Format("/Select, {0}", fileData.FilePath);
+            using (var proc = new Process { StartInfo = new ProcessStartInfo("explorer.exe", args) })
             {
                 proc.Start();
             }
@@ -564,17 +612,13 @@ namespace GrepperWPF
             lvwLineData.Items.Clear();
             if (lvwFileMatches.SelectedItems.Count > 0)
             {
-                FileMatchRow selectedRow = SelectedFileRow();
-                if (selectedRow == null)
+                var fileData = SelectedFile();
+                if (fileData == null)
                 {
                     return;
                 }
-                var fileMatch = (from match in _fileController.FileDataList
-                                where match.FilePath == selectedRow.Path
-                                select match).ToList();
 
-                if (fileMatch.Count < 1) return;
-                foreach (var item in (Dictionary<long, LineData>)fileMatch.First().LineDataList)
+                foreach (var item in (Dictionary<long, LineData>)fileData.LineDataList)
                 {
                     var lvi = new ListViewItem
                     {

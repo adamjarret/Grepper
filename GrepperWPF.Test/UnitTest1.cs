@@ -13,10 +13,10 @@ namespace GrepperWPF.Test
         {
             var so = new SearchOptions
             {
-                search = "foo",
-                literal = false,
-                matchCase = false,
-                matchPhrase = false
+                Search = "foo",
+                Literal = false,
+                MatchCase = false,
+                MatchPhrase = false
             };
 
             var fileData = new FileData();

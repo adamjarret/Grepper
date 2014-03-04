@@ -351,12 +351,12 @@ namespace GrepperView
             #region Save Settings
 
             SearchOptions so = new SearchOptions();
-            so.literal = rbLiteral.Checked;
-            so.matchCase = cbxMatchCase.Checked;
-            so.matchPhrase = cbxMatchPhrase.Checked;
-            so.recursive = cbxRecursive.Checked;
-            so.search = ddlSearchCriteria.Text;
-            so.path = txtBaseSearchPath.Text;
+            so.Literal = rbLiteral.Checked;
+            so.MatchCase = cbxMatchCase.Checked;
+            so.MatchPhrase = cbxMatchPhrase.Checked;
+            so.Recursive = cbxRecursive.Checked;
+            so.Search = ddlSearchCriteria.Text;
+            so.Path = txtBaseSearchPath.Text;
             UserSettings.SearchOptions = so;
 
             UserSettings.Save();
@@ -389,11 +389,11 @@ namespace GrepperView
                 }
 
                 SearchOptions so = UserSettings.SearchOptions;
-                ddlSearchCriteria.Text = so.search;
-                cbxMatchCase.Checked = so.matchCase;
-                cbxMatchPhrase.Checked = so.matchPhrase;
-                cbxRecursive.Checked = so.recursive;
-                rbLiteral.Checked = so.literal;
+                ddlSearchCriteria.Text = so.Search;
+                cbxMatchCase.Checked = so.MatchCase;
+                cbxMatchPhrase.Checked = so.MatchPhrase;
+                cbxRecursive.Checked = so.Recursive;
+                rbLiteral.Checked = so.Literal;
                 rbRegular.Checked = !rbLiteral.Checked;
 
                 // set app version on titlebar
