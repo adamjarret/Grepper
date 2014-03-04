@@ -179,7 +179,7 @@
         
         <!-- User Preferences -->
 
-        <Border BorderBrush="SlateGray" BorderThickness="1" x:Name="Options" Panel.ZIndex="999" Height="Auto" Margin="20" Visibility="Visible">
+        <Border BorderBrush="SlateGray" BorderThickness="1" x:Name="Options" Panel.ZIndex="999" Height="Auto" Margin="20" Visibility="Collapsed">
             <Grid>
                 <Grid.Background>
                     <SolidColorBrush Color="White" Opacity=".95"/>
