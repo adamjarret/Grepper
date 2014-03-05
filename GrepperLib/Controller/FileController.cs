@@ -130,14 +130,13 @@ namespace GrepperLib.Controller
                     }
                     catch (ArgumentException)
                     {
-                        MessageList.Add("Invalid Exclude Pattern: " + p);
+                        MessageList.Add("Invalid Regular Expression (File Filter Exclude Pattern): " + p);
                         return null;
                     }
                 })
                 .ToList();
             if (MessageList.Count > 0) return;
 
-            if (!MatchCase) SearchCriteria = SearchCriteria.ToLower();
             foreach (var searchPattern in searchPatterns)
             {
                 try
@@ -155,6 +154,11 @@ namespace GrepperLib.Controller
                 catch (UnauthorizedAccessException uax)
                 {
                     MessageList.Add(uax.Message);
+                }
+                catch (ArgumentException)
+                {
+                    MessageList.Add("Invalid Regular Expression (Search Criteria): " + SearchCriteria);
+                    return;
                 }
             }
         }
