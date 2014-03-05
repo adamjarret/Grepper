@@ -15,7 +15,6 @@ namespace GrepperLib.Controller
 
         private string _baseSearchPath;
         volatile private IList<FileData> _fileDataList;
-        private IList<string> _fileExtensionList;
         public BackgroundWorker Worker { get; set; }
 
         #endregion Private Members
@@ -107,20 +106,30 @@ namespace GrepperLib.Controller
 
             // if no criteria or no file extensions or no base path, there is no way data can be generated
             if (string.IsNullOrEmpty(SearchCriteria)) MessageList.Add("No search criteria provided.");
-            if (string.IsNullOrEmpty(FileExtensions)) MessageList.Add("No file extensions provided.");
+            if (string.IsNullOrEmpty(FileExtensions)) MessageList.Add("No file filters provided.");
             if (string.IsNullOrEmpty(BaseSearchPath)) MessageList.Add("No search path provided.");
             if (MessageList.Count > 0) return;
 
             _fileDataList = new List<FileData>();
-            _fileExtensionList = new List<string>();
-            _fileExtensionList = StringHelper.ConvertStringToList(FileExtensions);
+
+            var wildcards = StringHelper.ConvertStringToList(FileExtensions);
+            var searchPatterns = wildcards.Where(e =>
+                !String.IsNullOrWhiteSpace(e) && !e.Trim().StartsWith("-")
+                ).ToList();
+            if (searchPatterns.Count < 1)
+            {
+                searchPatterns.Add("*.*"); // If only exclude patterns are specified, assume *.* as base
+            }
+            var excludedPatterns = wildcards.Where(e => e.Trim().StartsWith("-"))
+                .Select(e => WildcardHelper.ConvertToRegex(e.Substring(1)))
+                .ToList();
 
             if (!MatchCase) SearchCriteria = SearchCriteria.ToLower();
-            foreach (string extension in _fileExtensionList)
+            foreach (var searchPattern in searchPatterns)
             {
                 try
                 {
-                    SearchFiles(extension);
+                    SearchFiles(searchPattern, excludedPatterns);
                 }
                 catch (PathTooLongException ptle)
                 {
@@ -140,19 +149,16 @@ namespace GrepperLib.Controller
         #endregion Public Methods
         #region Private Methods________
 
-        private void SearchFiles(string extension)
+        private void SearchFiles(string searchPattern, IEnumerable<Regex> excludedPatterns)
         {
             SearchOption so = RecursiveSearch ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            var files = (from file in Directory.EnumerateFiles(BaseSearchPath, extension, so)
-                        select file).ToList();
+            var files = (from file in Directory.EnumerateFiles(BaseSearchPath, searchPattern, so)
+                         where excludedPatterns.All(e => !e.IsMatch(file))
+                         select file).ToList();
 
             double i = 0;
-            double total = 0;
+            double total = files.Count;
             int percent = 0;
-            if (Worker != null)
-            {
-                total = files.Count;
-            }
             foreach (var f in files)
             {
                 i++;
@@ -171,7 +177,7 @@ namespace GrepperLib.Controller
                 if (!f.Contains('\\')) continue;
                 var fileData = new FileData
                 {
-                    FileExtension = extension,
+                    FileExtension = searchPattern,
                     FileName = f.Substring(f.LastIndexOf('\\') + 1),
                     FilePath = f.Trim()
                 };
@@ -205,14 +211,14 @@ namespace GrepperLib.Controller
 
         public void SearchLine(long lineNumber, string line, ref FileData fileData)
         {
-            RegexOptions regOptions = (MatchCase) ? RegexOptions.None : RegexOptions.IgnoreCase;
+            var regOptions = (MatchCase) ? RegexOptions.None : RegexOptions.IgnoreCase;
             if (LiteralSearch)
             {
                 if (MatchPhrase)
                 {
                     // criteria to find search pattern that ignores certain boundaries
-                    string phrase = string.Format(@"(\b)({0}+(\b|\n|\s))", SearchCriteria);
-                    Regex reg = new Regex(phrase, regOptions);
+                    var phrase = String.Format(@"(\b)({0}+(\b|\n|\s))", SearchCriteria);
+                    var reg = new Regex(phrase, regOptions);
                     if (reg.IsMatch(line))
                     {
                         var lineData = new LineData(lineNumber, line);

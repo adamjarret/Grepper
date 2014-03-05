@@ -6,7 +6,7 @@ namespace Grepper.ContextMenu
 {
     public static class RegistrySettings
     {
-        private static string _grepperPath          = "Folder\\Shell\\Grepper\\";
+        private static string _grepperPath          = "Folder\\Shell\\Search with Grepper\\";
         private static string _commandPath          = _grepperPath + "Command";
 
         /// <summary>

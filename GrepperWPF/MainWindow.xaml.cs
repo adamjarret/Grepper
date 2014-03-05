@@ -38,6 +38,9 @@ namespace GrepperWPF
 
             InitializeComponent();
 
+            // Window Key Press observer (will be triggered when focus is on any control item)
+            PreviewKeyUp += Window_KeyUp;
+
             // Overlay Timer
             _overlayTimer = new Timer();
             _overlayTimer.Elapsed += overlayTimer_Tick;
@@ -60,7 +63,6 @@ namespace GrepperWPF
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
-
             ddlSearchCriteria.Focus();
         }
         
@@ -82,7 +84,18 @@ namespace GrepperWPF
         }
 
         /// <summary>
-        /// Triggered when the "Copied to clipboard" overlay is shown/hidden
+        /// Cancel search if user hits escape
+        /// </summary>
+        private void Window_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                CancelSearch();
+            }
+        }
+
+        /// <summary>
+        /// Triggered when the overlay is shown/hidden
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -135,21 +148,28 @@ namespace GrepperWPF
         /// <param name="e"></param>
         private void lvw_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Return) return; // We only care about the return key
-
-            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            switch (e.Key)
             {
-                if (UserSettings.ShiftEnterToReveal)
-                {
-                    RevealSelectedFile();
-                }
-            }
-            else
-            {
-                if (UserSettings.EnterToOpen)
-                {
-                    OpenSelectedFile();
-                }
+                case Key.Escape:
+                    CancelSearch();
+                    ddlSearchCriteria.Focus();
+                    break;
+                case Key.Return:
+                    if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    {
+                        if (UserSettings.ShiftEnterToReveal)
+                        {
+                            RevealSelectedFile();
+                        }
+                    }
+                    else
+                    {
+                        if (UserSettings.EnterToOpen)
+                        {
+                            OpenSelectedFile();
+                        }
+                    }
+                    break;
             }
         }
 
@@ -475,7 +495,7 @@ namespace GrepperWPF
             }
 
             // set app version on titlebar
-            Title = string.Format("GREPPER v{0}.{1}.{2}", Assembly.GetAssembly(_fileController.GetType()).GetName().Version.Major,
+            Title = string.Format("Grepper v{0}.{1}.{2}", Assembly.GetAssembly(_fileController.GetType()).GetName().Version.Major,
                                                                 Assembly.GetAssembly(_fileController.GetType()).GetName().Version.Minor,
                                                                 Assembly.GetAssembly(_fileController.GetType()).GetName().Version.Build);
 
@@ -488,6 +508,11 @@ namespace GrepperWPF
                 cbxRegEx.IsChecked = !so.Literal;
                 ddlFileExtensions.Text = so.Extensions;
                 ddlSearchCriteria.Text = so.Search;
+            }
+
+            if(String.IsNullOrEmpty(ddlFileExtensions.Text))
+            {
+                ddlFileExtensions.Text = "*.*";
             }
 
             ddlBaseSearchPath.Text = UserSettings.GetInitialPath();
@@ -583,7 +608,11 @@ namespace GrepperWPF
         private void OpenSelectedFile()
         {
             var fileData = SelectedFile();
-            if (fileData == null) return;
+            if (fileData == null)
+            {
+                return;
+            }
+
             using (var proc = new Process { StartInfo = new ProcessStartInfo(fileData.FilePath) })
             {
                 proc.Start();
@@ -596,8 +625,12 @@ namespace GrepperWPF
         private void RevealSelectedFile()
         {
             var fileData = SelectedFile();
-            if (fileData == null) return;
-            string args = string.Format("/Select, {0}", fileData.FilePath);
+            if (fileData == null)
+            {
+                return;
+            }
+
+            var args = String.Format("/Select, {0}", fileData.FilePath);
             using (var proc = new Process { StartInfo = new ProcessStartInfo("explorer.exe", args) })
             {
                 proc.Start();
@@ -610,22 +643,24 @@ namespace GrepperWPF
         private void ShowMatches()
         {
             lvwLineData.Items.Clear();
-            if (lvwFileMatches.SelectedItems.Count > 0)
+            
+            if (lvwFileMatches.SelectedItems.Count <= 0)
             {
-                var fileData = SelectedFile();
-                if (fileData == null)
-                {
-                    return;
-                }
+                return;
+            }
 
-                foreach (var item in (Dictionary<long, LineData>)fileData.LineDataList)
+            var fileData = SelectedFile();
+            if (fileData == null)
+            {
+                return;
+            }
+
+            foreach (var item in (Dictionary<long, LineData>)fileData.LineDataList)
+            {
+                lvwLineData.Items.Add(new ListViewItem
                 {
-                    var lvi = new ListViewItem
-                    {
-                        Content = new LineMatchRow(item.Value)
-                    };
-                    lvwLineData.Items.Add(lvi);
-                }
+                    Content = new LineMatchRow(item.Value)
+                });
             }
         }
 
@@ -674,7 +709,10 @@ namespace GrepperWPF
 
         private void CancelSearch()
         {
-            _workerThread.CancelAsync();
+            if (_workerThread != null && _workerThread.IsBusy)
+            {
+                _workerThread.CancelAsync();
+            }
         }
 
         /// <summary>

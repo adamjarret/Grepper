@@ -62,6 +62,7 @@
     <Compile Include="Model\WindowSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\StringHelper.cs" />
+    <Compile Include="Utility\WildcardHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
