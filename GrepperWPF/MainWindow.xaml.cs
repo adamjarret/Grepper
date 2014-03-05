@@ -687,7 +687,7 @@ namespace GrepperWPF
             SaveCurrentSettings();
 
             // pass form data to file controller
-            _fileController.SetFormData(GetSearchOptions());
+            _fileController.SetFormData(GetSearchOptions(), UserSettings.TreatExcludePatternsAsRegex);
 
             // create background worker thread to perform search so that UI does not lock up
             _workerThread = new BackgroundWorker
@@ -733,7 +733,7 @@ namespace GrepperWPF
 
             // perform search
             fc.GenerateFileData();
-
+            
             // set DoWorkEventArgs Result to result of fc operation
             e.Result = fc;
         }

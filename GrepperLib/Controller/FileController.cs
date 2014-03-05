@@ -20,6 +20,14 @@ namespace GrepperLib.Controller
         #endregion Private Members
         #region Public Properties______
 
+        public string SearchCriteria { get; set; }
+        public string FileExtensions { get; set; }
+        public bool RecursiveSearch { get; set; }
+        public bool MatchCase { get; set; }
+        public bool MatchPhrase { get; set; }
+        public bool LiteralSearch { get; set; }
+        public bool TreatExcludePatternsAsRegex { get; set; }
+
         public string BaseSearchPath
         {
             get
@@ -45,19 +53,7 @@ namespace GrepperLib.Controller
             }
         }
 
-        public string FileExtensions { get; set; }
-
-        public bool RecursiveSearch { get; set; }
-
-        public bool MatchCase { get; set; }
-
-        public bool MatchPhrase { get; set; }
-
-        public bool LiteralSearch { get; set; }
-
         public IList<string> MessageList { get; private set; }
-
-        public string SearchCriteria { get; set; }
 
         public int TotalMatches
         {
@@ -81,12 +77,13 @@ namespace GrepperLib.Controller
             MatchPhrase = false;
             MessageList = new List<string>();
             _fileDataList = new List<FileData>();
+            TreatExcludePatternsAsRegex = false;
         }
 
         #endregion Constructor
         #region Public Methods_________
 
-        public void SetFormData(SearchOptions so)
+        public void SetFormData(SearchOptions so, bool treatExcludePatternsAsRegex = false)
         {
             SearchCriteria = (so.Search ?? "").Trim();
             MatchCase = so.MatchCase;
@@ -95,6 +92,7 @@ namespace GrepperLib.Controller
             RecursiveSearch = so.Recursive;
             BaseSearchPath = so.Path ?? "";
             LiteralSearch = so.Literal;
+            TreatExcludePatternsAsRegex = treatExcludePatternsAsRegex;
         }
 
         /// <summary>
@@ -121,8 +119,23 @@ namespace GrepperLib.Controller
                 searchPatterns.Add("*.*"); // If only exclude patterns are specified, assume *.* as base
             }
             var excludedPatterns = wildcards.Where(e => e.Trim().StartsWith("-"))
-                .Select(e => WildcardHelper.ConvertToRegex(e.Substring(1)))
+                .Select(e =>
+                {
+                    var p = e.Substring(1);
+                    try
+                    {
+                        return TreatExcludePatternsAsRegex
+                            ? new Regex(p)
+                            : WildcardHelper.ConvertToRegex(p);
+                    }
+                    catch (ArgumentException)
+                    {
+                        MessageList.Add("Invalid Exclude Pattern: " + p);
+                        return null;
+                    }
+                })
                 .ToList();
+            if (MessageList.Count > 0) return;
 
             if (!MatchCase) SearchCriteria = SearchCriteria.ToLower();
             foreach (var searchPattern in searchPatterns)

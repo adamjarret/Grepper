@@ -305,14 +305,38 @@
                         Path=RightClickToCopy}"
                         Content="Right click to copy a result (either the file path or line text)" />
 
-                        <Label Margin="0,20,0,0" Content="Experimental" FontWeight="Bold" FontSize="16" HorizontalAlignment="Left" />
+                        <Label Margin="0,20,0,0" Content="Advanced" FontWeight="Bold" FontSize="16" HorizontalAlignment="Left" />
 
                         <CheckBox Margin="6"
-                        Name="cbxCopyLinesInSequence"
-                        IsChecked="{Binding
-                        Source={StaticResource UserSettings},
-                        Path=CopyLinesInSequence}"
-                        Content="Copy result lines in sequence (only useful if you use a clipboard manager)" />
+                                  Name="cbxTreatExcludePatternsAsRegex"
+                                  IsChecked="{Binding Source={StaticResource UserSettings}, Path=TreatExcludePatternsAsRegex}"
+                                  Content="Treat file filter &quot;exclude patterns&quot; as regular expressions"
+                                  ToolTipService.ShowDuration="60000">
+                            <CheckBox.ToolTip>
+                                <TextBlock>
+                                    File filters restrict the results to file paths that match the wildcard pattern.<LineBreak /><LineBreak />
+                                    By default, &quot;exclude patterns&quot; (file filters begining with a minus symbol) also use wildcard matching.<LineBreak />
+                                    When this option is enabled, regular expression matching is used instead.<LineBreak /><LineBreak />
+                                    Regardless of this setting, include patterns (file filters NOT begining with a minus symbol)<LineBreak />
+                                    ALWAYS use wildcard matching.  
+                                </TextBlock>
+                            </CheckBox.ToolTip>
+                        </CheckBox>
+
+                        <CheckBox Margin="6"
+                                  Name="cbxCopyLinesInSequence"
+                                  IsChecked="{Binding Source={StaticResource UserSettings}, Path=CopyLinesInSequence}"
+                                  Content="Experimental: Copy result lines in sequence (only useful if you use a clipboard manager)"
+                                  ToolTipService.ShowDuration="60000">
+                            <CheckBox.ToolTip>
+                                <TextBlock>
+                                    By default, all selected lines are copied as one block of text.<LineBreak /><LineBreak />
+                                    When this option is enabled, each line is copied to the clipboard one after another<LineBreak />
+                                    (with a 120ms delay between each).<LineBreak /><LineBreak />
+                                    This is only useful if you use a clipboard manager like Ditto.
+                                </TextBlock>
+                            </CheckBox.ToolTip>
+                        </CheckBox>
 
                         <Button Margin="0,10,6,10" Width="80" Height="28.5" HorizontalAlignment="Right" Click="btnCloseOptions_Click">Close</Button>
 

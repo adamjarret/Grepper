@@ -257,5 +257,17 @@ namespace GrepperWPF.Properties {
                 this["ShiftEnterToReveal"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TreatExcludePatternsAsRegex {
+            get {
+                return ((bool)(this["TreatExcludePatternsAsRegex"]));
+            }
+            set {
+                this["TreatExcludePatternsAsRegex"] = value;
+            }
+        }
     }
 }

@@ -132,6 +132,12 @@ namespace GrepperWPF.Helpers
             set { Settings.Default.RightClickToCopy = value; }
         }
 
+        public static bool TreatExcludePatternsAsRegex
+        {
+            get { return Settings.Default.TreatExcludePatternsAsRegex; }
+            set { Settings.Default.TreatExcludePatternsAsRegex = value; }
+        }
+        
         // ReSharper restore MemberCanBePrivate.Global
         #endregion
 
