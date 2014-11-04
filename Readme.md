@@ -1,6 +1,6 @@
 # Grepper
 
-![Screen Shot](https://raw2.github.com/adamjarret/Grepper/master/GrepperWPF/ScreenShot.png)
+![Screen Shot](https://raw.githubusercontent.com/adamjarret/Grepper/master/GrepperWPF/ScreenShot.png)
 
 
 Search the contents of text files in a directory.
